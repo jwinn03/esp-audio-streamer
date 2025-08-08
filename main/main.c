@@ -21,6 +21,7 @@
 #include "esp_log.h"
 #include "nvs_flash.h"
 #include "driver/i2s.h"
+#include "driver/gpio.h"
 #include "esp_websocket_client.h"
 
 // ========================================================================================
@@ -45,6 +46,12 @@
 #define SAMPLE_RATE    (16000)
 #define BITS_PER_SAMPLE I2S_BITS_PER_SAMPLE_16BIT
 #define AUDIO_BUFFER_SIZE (2048) // Size of the buffer to hold audio data chunks
+
+// --- NEW: Hardware Switch Configuration ---
+// Connect a switch between this pin and GND.
+// When switch is closed (pin is LOW), transmission is ON.
+// When switch is open (pin is HIGH due to pull-up), transmission is OFF.
+#define TRANSMIT_SWITCH_PIN GPIO_NUM_39
 
 // ========================================================================================
 // --- GLOBAL VARIABLES & DEFINITIONS ---
@@ -185,6 +192,16 @@ void websocket_task(void *pvParameters) {
 void i2s_stream_task(void *pvParameters) {
     ESP_LOGI(TAG, "Starting I2S Stream Task");
 
+    // Configure the GPIO pin for hardware switch
+    gpio_config_t io_conf = {};
+    io_conf.intr_type = GPIO_INTR_DISABLE;
+    io_conf.mode = GPIO_MODE_INPUT;
+    io_conf.pin_bit_mask = (1ULL << TRANSMIT_SWITCH_PIN);
+    io_conf.pull_down_en = 0;
+    io_conf.pull_up_en = 1; // Enable internal pull-up resistor
+    gpio_config(&io_conf);
+    ESP_LOGI(TAG, "Transmit switch configured on GPIO %d", TRANSMIT_SWITCH_PIN);
+
     // Configure I2S
     i2s_config_t i2s_config = {
         .mode = I2S_MODE_MASTER | I2S_MODE_RX,
@@ -230,12 +247,15 @@ void i2s_stream_task(void *pvParameters) {
         esp_err_t result = i2s_read(I2S_PORT, audio_buffer, AUDIO_BUFFER_SIZE, &bytes_read, portMAX_DELAY);
 
         if (result == ESP_OK && bytes_read > 0) {
-            // Check if WebSocket is connected before sending
-            if (esp_websocket_client_is_connected(client)) {
-                // Send the raw audio data as a binary WebSocket message
-                int err = esp_websocket_client_send_bin(client, (const char *)audio_buffer, bytes_read, portMAX_DELAY);
-                if (err < 0) {
-                    ESP_LOGE(TAG, "WebSocket send error: %d", err);
+            // Check the state of transmit switch
+            if (gpio_get_level(TRANSMIT_SWITCH_PIN) == 0) { // Pin is LOW (switch closed), so transmit
+                // Check if WebSocket is connected before sending
+                if (esp_websocket_client_is_connected(client)) {
+                    // Send the raw audio data as a binary WebSocket message
+                    int err = esp_websocket_client_send_bin(client, (const char *)audio_buffer, bytes_read, portMAX_DELAY);
+                    if (err < 0) {
+                        ESP_LOGE(TAG, "WebSocket send error: %d", err);
+                    }
                 }
             }
         } else {
