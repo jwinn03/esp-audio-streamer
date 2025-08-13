@@ -43,9 +43,9 @@
 #define I2S_PORT       I2S_NUM_0
 
 // Audio Configuration
-#define SAMPLE_RATE    (16000)
+#define SAMPLE_RATE    (44100)
 #define BITS_PER_SAMPLE I2S_BITS_PER_SAMPLE_16BIT
-#define AUDIO_BUFFER_SIZE (2048) // Size of the buffer to hold audio data chunks
+#define AUDIO_BUFFER_SIZE (4096) // Size of the buffer to hold audio data chunks
 
 // --- NEW: Hardware Switch Configuration ---
 // Connect a switch between this pin and GND.
@@ -212,7 +212,7 @@ void i2s_stream_task(void *pvParameters) {
         .intr_alloc_flags = ESP_INTR_FLAG_LEVEL1,
         .dma_buf_count = 8,
 
-        .dma_buf_len = 256,
+        .dma_buf_len = 1024,
         .use_apll = false,
         .tx_desc_auto_clear = false,
         .fixed_mclk = 0
@@ -282,5 +282,5 @@ void app_main(void) {
     // Create the tasks
     xTaskCreate(&wifi_task, "wifi_task", 4096, NULL, 5, NULL);
     xTaskCreate(&websocket_task, "websocket_task", 8192, NULL, 5, NULL);
-    xTaskCreate(&i2s_stream_task, "i2s_stream_task", 8192, NULL, 10, NULL); // Higher priority for audio
+    xTaskCreate(&i2s_stream_task, "i2s_stream_task", 10240, NULL, 12, NULL); // Higher priority for audio
 }
