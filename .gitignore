@@ -1,3 +1,5 @@
 build/
+.vscode/
 sdkconfig
 sdkconfig.old
+main/network_info.h

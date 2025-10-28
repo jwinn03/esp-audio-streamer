@@ -28,13 +28,16 @@
 // --- CONFIGURATION ---
 // ========================================================================================
 
+#include "network_info.h" // Contains WIFI_SSID, WIFI_PASS, WEBSOCKET_URI - see below
+/*
 // WiFi Configuration
 #define WIFI_SSID      "example_ssid" 
 #define WIFI_PASS      "example_password"
 
 // WebSocket Server Configuration
-// NOTE: Use "ws://" protocol. For secure "wss://", additional configuration is needed.
-#define WEBSOCKET_URI  "ws://192.168.5.28:8080" // <-- IMPORTANT: Change to your server's IP
+// NOTE: Uses "ws://" protocol. For secure "wss://", additional configuration is needed.
+#define WEBSOCKET_URI  "ws://xxx.xxx.xxx.xxx:8080" // <-- Change to your server's IP
+*/
 
 // I2S Microphone Configuration (for a typical INMP441)
 #define I2S_WS_PIN     6
@@ -43,7 +46,7 @@
 #define I2S_PORT       I2S_NUM_0
 
 // Audio Configuration
-#define SAMPLE_RATE    (44100)
+#define SAMPLE_RATE    (16000)
 #define BITS_PER_SAMPLE I2S_BITS_PER_SAMPLE_16BIT
 #define AUDIO_BUFFER_SIZE (4096) // Size of the buffer to hold audio data chunks
 
