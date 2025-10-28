@@ -29,8 +29,8 @@
 // ========================================================================================
 
 // WiFi Configuration
-#define WIFI_SSID      "W2 Network"
-#define WIFI_PASS      "phan8496"
+#define WIFI_SSID      "example_ssid" 
+#define WIFI_PASS      "example_password"
 
 // WebSocket Server Configuration
 // NOTE: Use "ws://" protocol. For secure "wss://", additional configuration is needed.
